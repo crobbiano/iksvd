@@ -2,7 +2,7 @@
 % Create a subdictionary for each class and then create the composite
 % dictionary that contains 'ordered' atoms
 clear all
-load('C:\Users\cskunk\Downloads\yale_darkIS_darkMediumGen.mat')
+load('./yale_darkIS_darkMediumGen.mat')
 
 numClasses = length(unique(dictClass));
 availIndices = 1:length(dictClass);
@@ -36,5 +36,5 @@ dict_composite_class = dictClass;
 save('ksvd_dict.mat','dict_composite','dicts');
 
 %% Compare coefficients with ROMP
-xTrain_romp = RecursiveOMP(Dictionary, [], dictSet, .5);
-xTest_romp = RecursiveOMP(Dictionary, [], testSet, .5);
+% xTrain_romp = RecursiveOMP(Dictionary, [], dictSet, .5);
+% xTest_romp = RecursiveOMP(Dictionary, [], testSet, .5);

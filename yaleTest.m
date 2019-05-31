@@ -2,9 +2,9 @@
 clear all
 load('C:\Users\cskunk\Downloads\yale_darkIS_darkMediumGen.mat')
 
-params.L = 100;
+params.L = 15;
 params.K = length(dictClass);
-params.numIteration = 3;
+params.numIteration = 15;
 params.errorFlag = 0;
 params.preserveDCAtom = 0;
 params.InitializationMethod = 'DataElements';
@@ -15,7 +15,7 @@ params.displayProgress = 1;
 
 %% Save the stuff
 dict_composite_class = dictClass;
-save('ksvd_dict.mat','dict_composite','dict_composite_class');
+save('ksvd_dict2.mat','dict_composite','dict_composite_class');
 
 %% Compare coefficients with ROMP
 xTrain_romp = RecursiveOMP(dict_composite, [], dictSet, .5);

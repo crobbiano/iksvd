@@ -114,7 +114,7 @@ for iterNum = 1:param.numIteration
     % find the coefficients
     if (param.errorFlag==0)
         %CoefMatrix = mexOMPIterative2(Data, [FixedDictionaryElement,Dictionary],param.L);
-        CoefMatrix = OMP([FixedDictionaryElement,Dictionary],Data, param.L);
+        CoefMatrix = OMP_lib([FixedDictionaryElement,Dictionary],Data, param.L);
        
         
     else 

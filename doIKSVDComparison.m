@@ -7,32 +7,48 @@
 for runNum=1:10
     clearvars -except runNum
     load('./yale_darkIS_darkMediumGen.mat')
-    load('./ksvd_dict2.mat')
-    doAzimi = 0;
-    
-    %% Compare coefficients with ROMP
-    xTrain_romp = RecursiveOMP(dict_composite, [], trainSet, .2);
-    xTest_romp = RecursiveOMP(dict_composite, [], testSet, 1);
-    xValid_romp = RecursiveOMP(dict_composite, [], validSet, 1);
-    % xTrain_romp = RecursiveOMP(dict_ksvd, [], trainSet, .2);
-    % xTest_romp = RecursiveOMP(dict_ksvd, [], testSet, 1);
-    
+    load('./ksvd_dict_multiclass.mat')
+    %     load('./ksvd_dict3.mat')
+    doAzimi = 0;  
     %% Train an SVM for classification
     % When doing prediction on training and testing sets, first train the SVM
     % on the reconstructed samples using the sparse codes and KSVD dictionary
-    model = svmtrain(dictClass', [dict_composite*xTrain_romp]', '-s 1 -n .5');
-    [predicted_label, accuracy, decisions] = svmpredict(trainClass', [dict_composite*xTrain_romp]', model );
-    accs.acc_train(1) = accuracy(1);
-    [predicted_label, accuracy, decisions] = svmpredict(testClass', [dict_composite*xTest_romp]', model );
-    accs.acc_test(1) = accuracy(1);
-    [predicted_label, accuracy, decisions] = svmpredict(validClass', [dict_composite*xValid_romp]', model );
-    accs.acc_valid(1) = accuracy(1);
+    useSVM = 0;
+    if useSVM
+        % Compare coefficients with ROMP
+        xTrain_romp = RecursiveOMP(dict_composite, [], trainSet, .1);
+        xTest_romp = RecursiveOMP(dict_composite, [], testSet, .1);
+        xValid_romp = RecursiveOMP(dict_composite, [], validSet, .1);
+        % xTrain_romp = RecursiveOMP(dict_ksvd, [], trainSet, .2);
+        % xTest_romp = RecursiveOMP(dict_ksvd, [], testSet, 1);
+        
+        model = svmtrain(dictClass', [xTrain_romp]', '-s 1 -n .5');
+        [predicted_label, accuracy, decisions] = svmpredict(trainClass', [xTrain_romp]', model );
+        accs.acc_train(1) = accuracy(1);
+        [predicted_label, accuracy, decisions] = svmpredict(testClass', [xTest_romp]', model );
+        accs.acc_test(1) = accuracy(1);
+        [predicted_label, accuracy, decisions] = svmpredict(validClass', [xValid_romp]', model );
+        accs.acc_valid(1) = accuracy(1);
+        
+        % Check the reconstruction errors
+        recon_train = trainSet - dict_composite*xTrain_romp;
+        recon_test = testSet - dict_composite*xTest_romp;
+        recon_valid = validSet - dict_composite*xValid_romp;
+    end
     
-    %% Check the reconstruction errors
-    recon_train = trainSet - dict_composite*xTrain_romp;
-    recon_test = testSet - dict_composite*xTest_romp;
-    recon_valid = validSet - dict_composite*xValid_romp;
-    
+    %% Do MSC
+    useMSC = 1;
+    if useMSC
+        [accs.acc_train(1), recon_train] = classifyMSC(dicts, dictSet, dictClass);
+        [accs.acc_test(1), recon_test] = classifyMSC(dicts, testSet, testClass);
+        [accs.acc_valid(1), recon_valid] = classifyMSC(dicts, validSet, validClass);
+        
+        % Check the reconstruction errors
+        recon_train = trainSet - recon_train;
+        recon_test = testSet - recon_test;
+        recon_valid = validSet - recon_valid;
+    end
+    %% Check the reconstruction errors   
     recons.recon_err_train(1) = mean(vecnorm(recon_train));
     recons.recon_err_test(1) = mean(vecnorm(recon_test));
     recons.recon_err_valid(1) = mean(vecnorm(recon_valid));
@@ -56,12 +72,12 @@ for runNum=1:10
         [testTempClass, sidxs] = sort(testTempClass);
         testTemp = testTemp(:,sidxs);
         
-        params.K1 = max([floor(batchSize/10), 1]);
+        %         params.K1 = max([floor(batchSize/10), 1]);
+        params.K1 = 1;
         params.numIteration = 5;
         params.preserveDCAtom = 0;
         %     params.InitializationMethod = 'DataElements';
         params.InitializationMethod = 'GivenMatrix';
-        params.initialDictionary = dict_composite;
         params.displayProgress = 1;
         params.DataNew_RefineFlag = 0;
         params.DictionaryIncrementalRefineFlag = 0;
@@ -70,49 +86,73 @@ for runNum=1:10
         params.MOD_diffErr = .5;
         %     params.errorFlag = 0;
         coding.method = 'MP';
-        coding.L = 16;
+        coding.L = 5;%16;
         coding.errorFlag = 0;
         coding.errorGoal = .5;
-        if doAzimi
-            type = 'ikmod';
-            [dict_composite, output] = IKMOD_rms_new5(testTemp, [trainSet seenSamples], dict_composite, params, coding);
-        else
-            type='iksvd';
-            [newDict, output] = IKSVD(testTemp, dict_composite, params, coding);
-            % Add the new column to the dictionary
-            dict_composite = [dict_composite, newDict];
+        
+        % need to go class by class and add the recent samples to the dicts
+        numClasses = length(dicts);
+        for c = 1:numClasses
+            params.initialDictionary = dicts{c};
+            tempSamples = testTemp(:,testTempClass==c);
+            if ~isempty(tempSamples)
+                if doAzimi
+                    type = 'ikmod';
+                    [dicts{c}, output] = IKMOD_rms_new5(tempSamples, [trainSet(:, trainClass == c) seenSamples(:, seenClass == c)], dicts{c}, params, coding);
+                else
+                    type='iksvd';
+                    [newDict, output] = IKSVD(tempSamples, dicts{c}, params, coding);
+                    % Add the new column to the dictionary
+                    dicts{c} = [dicts{c}, newDict];
+                end
+            end
         end
+        
         seenSamples = [seenSamples testTemp];
         seenClass = [seenClass testTempClass];
         
-        % Check the classification abilities
-        xTrain_romp = RecursiveOMP(dict_composite, [], trainSet, .1);
-        xTest_romp = RecursiveOMP(dict_composite, [], testSet, .1);
-        xTestTemp_romp = RecursiveOMP(dict_composite, [], seenSamples, .1);
-        xValid_romp = RecursiveOMP(dict_composite, [], validSet, .1);
+        if useSVM
+            % Check the classification abilities
+            xTrain_romp = RecursiveOMP(dict_composite, [], trainSet, .1);
+            xTest_romp = RecursiveOMP(dict_composite, [], testSet, .1);
+            xTestTemp_romp = RecursiveOMP(dict_composite, [], seenSamples, .1);
+            xValid_romp = RecursiveOMP(dict_composite, [], validSet, .1);
+            
+            model = svmtrain([dictClass seenClass]', [xTrain_romp xTestTemp_romp]', '-s 1 -n .5');
+            [predicted_label, accuracy, decisions] = svmpredict(trainClass', [xTrain_romp]', model );
+            accs.acc_train(end+1) = accuracy(1);
+            [predicted_label, accuracy, decisions] = svmpredict(testClass', [xTest_romp]', model );
+            accs.acc_test(end+1) = accuracy(1);
+            [predicted_label, accuracy, decisions] = svmpredict(validClass', [xValid_romp]', model );
+            accs.acc_valid(end+1) = accuracy(1);
+            
+            % Check the reconstruction errors
+            recon_train = trainSet - dict_composite*xTrain_romp;
+            recon_test = testSet - dict_composite*xTest_romp;
+            recon_valid = validSet - dict_composite*xValid_romp;
+        end
         
-        model = svmtrain([dictClass seenClass]', [dict_composite*[xTrain_romp xTestTemp_romp]]', '-s 1 -n .5');
-        [predicted_label, accuracy, decisions] = svmpredict(trainClass', [dict_composite*xTrain_romp]', model );
-        accs.acc_train(end+1) = accuracy(1);
-        [predicted_label, accuracy, decisions] = svmpredict(testClass', [dict_composite*xTest_romp]', model );
-        accs.acc_test(end+1) = accuracy(1);
-        [predicted_label, accuracy, decisions] = svmpredict(validClass', [dict_composite*xValid_romp]', model );
-        accs.acc_valid(end+1) = accuracy(1);
+        if useMSC
+            [accs.acc_train(end+1), recon_train] = classifyMSC(dicts, dictSet, dictClass);
+            [accs.acc_test(end+1),  recon_test]  = classifyMSC(dicts, testSet, testClass);
+            [accs.acc_valid(end+1), recon_valid] = classifyMSC(dicts, validSet, validClass);
+            
+            % Check the reconstruction errors
+            recon_train = trainSet - recon_train;
+            recon_test = testSet - recon_test;
+            recon_valid = validSet - recon_valid;
+        end
         
-        % Check the reconstruction errors
-        recon_train = trainSet - dict_composite*xTrain_romp;
-        recon_test = testSet - dict_composite*xTest_romp;
-        recon_valid = validSet - dict_composite*xValid_romp;
         
         recons.recon_err_train(end+1) = mean(vecnorm(recon_train));
-        recons.recon_err_test(end+1) = mean(vecnorm(recon_test));
+        recons.recon_err_test(end+1)  = mean(vecnorm(recon_test));
         recons.recon_err_valid(end+1) = mean(vecnorm(recon_valid));
     end
     save(['results' filesep type '_res' num2str(runNum) '.mat'], 'recons', 'accs', 'dict_composite', 'batchSize', 'params', 'coding')
 end
 %% Plot things
 figure(889);
-% clf
+clf
 hold on
 plot(accs.acc_train)
 plot(accs.acc_test)

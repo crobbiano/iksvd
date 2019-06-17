@@ -50,11 +50,11 @@ for i = 1:size(Y,2)
     
     % Add atoms in D until norm of residual falls below specified value
     xbest = x;
-    maxNumIterations = 100;
+    maxNumIterations = 10;
     numIterations = 1;
     rprev = r;
     Indicesbest = [];
-    while (norm(r) > resid_norm) & (numIterations < maxNumIterations)
+    while (norm(r) > resid_norm) && (numIterations < maxNumIterations)
                 
         % Find best match
         [~,ind] = max(abs(r'*D));

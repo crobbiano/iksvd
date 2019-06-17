@@ -29,52 +29,53 @@ for i=1:size(fileListIKMOD,1)
 end
 %% Plot things
 figure(1); clf; hold on;
-newAtoms = 5;
-h1 = plot(newAtoms*[0:size(acc_train_IKMOD,2)-1], mean(acc_train_IKSVD,1),'-o','LineWidth',2);
-h2 = plot(newAtoms*[0:size(acc_train_IKMOD,2)-1], mean(acc_train_IKMOD,1),'-*','LineWidth',2);
+newAtoms = 1;
+h1 = plot(newAtoms*[0:size(acc_train_IKMOD,2)-1], 100*mean(acc_train_IKSVD,1),'-o','LineWidth',2);
+h2 = plot(newAtoms*[0:size(acc_train_IKMOD,2)-1], 100*mean(acc_train_IKMOD,1),'-*','LineWidth',2);
 
-plot(newAtoms*[0:size(acc_train_IKMOD,2)-1], mean(acc_train_IKSVD,1)-std(acc_train_IKSVD,1), '--o', 'Color', h1.Color, 'HandleVisibility', 'off','LineWidth',.01)
-plot(newAtoms*[0:size(acc_train_IKMOD,2)-1], mean(acc_train_IKSVD,1)+std(acc_train_IKSVD,1), '--o', 'Color', h1.Color, 'HandleVisibility', 'off','LineWidth',.01)
+plot(newAtoms*[0:size(acc_train_IKMOD,2)-1], 100*(mean(acc_train_IKSVD,1)-std(acc_train_IKSVD,1)), '--o', 'Color', h1.Color, 'HandleVisibility', 'off','LineWidth',.01)
+plot(newAtoms*[0:size(acc_train_IKMOD,2)-1], (min([ 100*(mean(acc_train_IKSVD,1)+std(acc_train_IKSVD,1));100*ones(1,size(acc_train_IKSVD,2))],[],1)), '--o', 'Color', h1.Color, 'HandleVisibility', 'off','LineWidth',.01)
 
-plot(newAtoms*[0:size(acc_train_IKMOD,2)-1], mean(acc_train_IKMOD,1)-std(acc_train_IKMOD,1), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
-plot(newAtoms*[0:size(acc_train_IKMOD,2)-1], mean(acc_train_IKMOD,1)+std(acc_train_IKMOD,1), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
+plot(newAtoms*[0:size(acc_train_IKMOD,2)-1], 100*(mean(acc_train_IKMOD,1)-std(acc_train_IKMOD,1)), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
+plot(newAtoms*[0:size(acc_train_IKMOD,2)-1], (min([ 100*(mean(acc_train_IKMOD,1)+std(acc_train_IKMOD,1));100*ones(1,size(acc_train_IKMOD,2))],[],1)), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
 
-legend('IK-SVD', 'IK-MOD','location','southeast')
+legend('IK-SVD', 'IDUO','location','southeast')
 xlabel('Number of new atoms added to dictionary')
-ylabel('CCR')
-title('Correct classification on baseline training set')
+ylabel('CCR (%)')
+title('Correct classification on baseline set')
+ylim([99 100])
 grid on
 
 figure(2); clf; hold on;
-h1 = plot(newAtoms*[0:size(acc_test_IKMOD,2)-1], mean(acc_test_IKSVD,1),'-o','LineWidth',2);
-h2 = plot(newAtoms*[0:size(acc_test_IKMOD,2)-1], mean(acc_test_IKMOD,1),'-*','LineWidth',2);
+h1 = plot(newAtoms*[0:size(acc_test_IKMOD,2)-1], 100*mean(acc_test_IKSVD,1),'-o','LineWidth',2);
+h2 = plot(newAtoms*[0:size(acc_test_IKMOD,2)-1], 100*mean(acc_test_IKMOD,1),'-*','LineWidth',2);
 
-plot(newAtoms*[0:size(acc_test_IKMOD,2)-1], mean(acc_test_IKSVD,1)-std(acc_test_IKSVD,1), '--o', 'Color', h1.Color, 'HandleVisibility', 'off','LineWidth',.01)
-plot(newAtoms*[0:size(acc_test_IKMOD,2)-1], mean(acc_test_IKSVD,1)+std(acc_test_IKSVD,1), '--o', 'Color', h1.Color, 'HandleVisibility', 'off','LineWidth',.01)
+plot(newAtoms*[0:size(acc_test_IKMOD,2)-1], 100*(mean(acc_test_IKSVD,1)-std(acc_test_IKSVD,1)), '--o', 'Color', h1.Color, 'HandleVisibility', 'off','LineWidth',.01)
+plot(newAtoms*[0:size(acc_test_IKMOD,2)-1], 100*(mean(acc_test_IKSVD,1)+std(acc_test_IKSVD,1)), '--o', 'Color', h1.Color, 'HandleVisibility', 'off','LineWidth',.01)
 
-plot(newAtoms*[0:size(acc_test_IKMOD,2)-1], mean(acc_test_IKMOD,1)-std(acc_test_IKMOD,1), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
-plot(newAtoms*[0:size(acc_test_IKMOD,2)-1], mean(acc_test_IKMOD,1)+std(acc_test_IKMOD,1), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
+plot(newAtoms*[0:size(acc_test_IKMOD,2)-1], 100*(mean(acc_test_IKMOD,1)-std(acc_test_IKMOD,1)), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
+plot(newAtoms*[0:size(acc_test_IKMOD,2)-1], 100*(mean(acc_test_IKMOD,1)+std(acc_test_IKMOD,1)), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
 
-legend('IK-SVD', 'IK-MOD','location','southeast')
+legend('IK-SVD', 'IDUO','location','southeast')
 xlabel('Number of new atoms added to dictionary')
-ylabel('CCR')
-title('Correct classification on testing set')
+ylabel('CCR (%)')
+title('Correct classification on in-situ set')
 grid on
 
 figure(3); clf; hold on;
-h1 = plot(newAtoms*[0:size(acc_valid_IKMOD,2)-1], mean(acc_valid_IKSVD,1),'-o','LineWidth',2);
-h2 = plot(newAtoms*[0:size(acc_valid_IKMOD,2)-1], mean(acc_valid_IKMOD,1),'-*','LineWidth',2);
+h1 = plot(newAtoms*[0:size(acc_valid_IKMOD,2)-1], 100*mean(acc_valid_IKSVD,1),'-o','LineWidth',2);
+h2 = plot(newAtoms*[0:size(acc_valid_IKMOD,2)-1], 100*mean(acc_valid_IKMOD,1),'-*','LineWidth',2);
 
-plot(newAtoms*[0:size(acc_valid_IKMOD,2)-1], mean(acc_valid_IKSVD,1)-std(acc_valid_IKSVD,1), '--o', 'Color', h1.Color, 'HandleVisibility', 'off','LineWidth',.01)
-plot(newAtoms*[0:size(acc_valid_IKMOD,2)-1], mean(acc_valid_IKSVD,1)+std(acc_valid_IKSVD,1), '--o', 'Color', h1.Color, 'HandleVisibility', 'off','LineWidth',.01)
+plot(newAtoms*[0:size(acc_valid_IKMOD,2)-1], 100*(mean(acc_valid_IKSVD,1)-std(acc_valid_IKSVD,1)), '--o', 'Color', h1.Color, 'HandleVisibility', 'off','LineWidth',.01)
+plot(newAtoms*[0:size(acc_valid_IKMOD,2)-1], 100*(mean(acc_valid_IKSVD,1)+std(acc_valid_IKSVD,1)), '--o', 'Color', h1.Color, 'HandleVisibility', 'off','LineWidth',.01)
 
-plot(newAtoms*[0:size(acc_valid_IKMOD,2)-1], mean(acc_valid_IKMOD,1)-std(acc_valid_IKMOD,1), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
-plot(newAtoms*[0:size(acc_valid_IKMOD,2)-1], mean(acc_valid_IKMOD,1)+std(acc_valid_IKMOD,1), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
+plot(newAtoms*[0:size(acc_valid_IKMOD,2)-1], 100*(mean(acc_valid_IKMOD,1)-std(acc_valid_IKMOD,1)), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
+plot(newAtoms*[0:size(acc_valid_IKMOD,2)-1], 100*(mean(acc_valid_IKMOD,1)+std(acc_valid_IKMOD,1)), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
 
-legend('IK-SVD', 'IK-MOD','location','southeast')
+legend('IK-SVD', 'IDUO','location','southeast')
 xlabel('Number of new atoms added to dictionary')
-ylabel('CCR')
-title('Correct classification on validation set')
+ylabel('CCR (%)')
+title('Correct classification on generalization set')
 grid on
 
 
@@ -88,10 +89,10 @@ plot(newAtoms*[0:size(recon_train_IKMOD,2)-1], mean(recon_train_IKSVD,1)+std(rec
 plot(newAtoms*[0:size(recon_train_IKMOD,2)-1], mean(recon_train_IKMOD,1)-std(recon_train_IKMOD,1), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
 plot(newAtoms*[0:size(recon_train_IKMOD,2)-1], mean(recon_train_IKMOD,1)+std(recon_train_IKMOD,1), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
 
-legend('IK-SVD', 'IK-MOD','location','northeast')
+legend('IK-SVD', 'IDUO','location','southwest')
 xlabel('Number of new atoms added to dictionary')
 ylabel('Reconstruction error')
-title('Reconstruction error on baseline training set')
+title('Reconstruction error on baseline set')
 grid on
 
 figure(5); clf; hold on;
@@ -104,10 +105,10 @@ plot(newAtoms*[0:size(recon_test_IKMOD,2)-1], mean(recon_test_IKSVD,1)+std(recon
 plot(newAtoms*[0:size(recon_test_IKMOD,2)-1], mean(recon_test_IKMOD,1)-std(recon_test_IKMOD,1), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
 plot(newAtoms*[0:size(recon_test_IKMOD,2)-1], mean(recon_test_IKMOD,1)+std(recon_test_IKMOD,1), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
 
-legend('IK-SVD', 'IK-MOD','location','northeast')
+legend('IK-SVD', 'IDUO','location','southwest')
 xlabel('Number of new atoms added to dictionary')
 ylabel('Reconstruction error')
-title('Reconstruction error on testing set')
+title('Reconstruction error on in-situ set')
 grid on
 
 figure(6); clf; hold on;
@@ -120,7 +121,7 @@ plot(newAtoms*[0:size(recon_valid_IKMOD,2)-1], mean(recon_valid_IKSVD,1)+std(rec
 plot(newAtoms*[0:size(recon_valid_IKMOD,2)-1], mean(recon_valid_IKMOD,1)-std(recon_valid_IKMOD,1), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
 plot(newAtoms*[0:size(recon_valid_IKMOD,2)-1], mean(recon_valid_IKMOD,1)+std(recon_valid_IKMOD,1), '--*', 'Color', h2.Color, 'HandleVisibility', 'off','LineWidth',.01)
 
-legend('IK-SVD', 'IK-MOD','location','northeast')
+legend('IK-SVD', 'IDUO','location','southwest')
 xlabel('Number of new atoms added to dictionary')
 ylabel('Reconstruction error')
 title('Reconstruction error on generalization set')
